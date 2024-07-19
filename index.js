@@ -28,6 +28,6 @@ app.route("/check").get((req,res)=>{
   return res.json("Ung dung cua ban hoat dong binh thuong")
 })
 
-server.listen(port, "192.168.1.5", () => {
+server.listen(port, "192.168.2.2", () => {
   console.log("server started");
 });
