@@ -11,7 +11,8 @@
     "socket.io": "^4.7.5"
   },
   "scripts": {
-    "dev": "nodemon index"
+    "dev": "nodemon index",
+    "start": "node index"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,6 @@
   },
   "homepage": "https://github.com/DevStack06/Chat-Server#readme",
   "engines": {
-    "node": "18.x"
+    "node": "18.x" 
   }
 }
