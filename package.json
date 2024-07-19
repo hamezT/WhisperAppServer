@@ -1,0 +1,29 @@
+{
+  "name": "chat-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.1",
+    "nodemon": "^2.0.22",
+    "socket.io": "^4.7.5"
+  },
+  "scripts": {
+    "dev": "nodemon index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevStack06/Chat-Server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DevStack06/Chat-Server/issues"
+  },
+  "homepage": "https://github.com/DevStack06/Chat-Server#readme",
+  "engines": {
+    "node": "18.x"
+  }
+}
