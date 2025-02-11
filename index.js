@@ -1,33 +1,78 @@
+require('dotenv').config();
 const express = require("express");
-var http = require("http");
+const http = require("http");
+const socketIo = require("socket.io");
+const mongoose = require('mongoose');
+const cors = require('cors');
+const connectDB = require('./config/database');
+const authenticateToken = require('./middleware/authenticateToken'); // Đường dẫn đến middleware xác thực của bạn
+const User = require('./models/User'); // Đường dẫn đến mô hình User
+
 const app = express();
 const port = process.env.PORT || 5000;
-var server = http.createServer(app);
-var io = require("socket.io")(server);
+const server = http.createServer(app);
+const io = socketIo(server);
 
-//middlewre
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors());
 app.use(express.json());
-var clients = {};
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
-io.on("connection", (socket) => {
-  console.log("connected");
-  console.log(socket.id, "has joined");
-  socket.on("signin", (id) => {
-    console.log(id);
-    clients[id] = socket;
-    console.log(clients);
+// Routes
+const apiRoutes = require("./routes/index.js");
+const imgRoutes = require("./routes");       // Đường dẫn tới file routes.js bên ngoài
+
+app.use("/api", apiRoutes);
+app.use("/", imgRoutes)
+
+// Socket.IO logic
+// Xử lý kết nối Socket.IO
+io.on('connection', (socket) => {
+  console.log('Một người dùng đã kết nối');
+  
+  socket.on('joinChat', (chatId) => {
+    socket.join(chatId);
+    console.log(`Người dùng đã tham gia phòng trò chuyện: ${chatId}`);
   });
-  socket.on("message", (msg) => {
-    console.log(msg);
-    let targetId = msg.targetId;
-    if (clients[targetId]) clients[targetId].emit("message", msg);
+
+  socket.on('newMessage', async (data) => {
+    console.log(data); // Thêm dòng này để console ra toàn bộ dữ liệu nhận được
+    const { chatId, senderId, content, type, fileUrl, createdAt } = data;
+
+    // Lấy avatar của người gửi từ cơ sở dữ liệu
+    const sender = await User.findById(senderId).select('avatar');
+    const avatar = sender.avatar;
+
+    socket.to(chatId).emit('message', {
+      chatId,
+      senderId,
+      avatar,
+      content,
+      type,
+      fileUrl,
+      createdAt,
+    });
+    console.log(`avatar ${avatar}`)
+    console.log(`Tin nhắn mới từ ${senderId} trong phòng trò chuyện ${chatId}`);
+  });
+  // Thêm sự kiện "typing"
+  socket.on('typing', (data) => {
+    const { chatId, userId } = data;
+    socket.to(chatId).emit('typing', { userId });
+    console.log(`Người dùng ${userId} đang nhập tin nhắn trong phòng trò chuyện ${chatId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Người dùng đã ngắt kết nối');
   });
 });
 
-app.route("/check").get((req,res)=>{
-  return res.json("Ung dung cua ban hoat dong binh thuong")
-})
-
-server.listen(port, "0.0.0.0", () => {
-  console.log("server started on port " + port);
+server.listen(port, "10.21.14.129", () => {
+  console.log(`Server started on port ${port}`);
 });
